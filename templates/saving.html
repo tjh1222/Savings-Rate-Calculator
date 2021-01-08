@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block body%}
+<div class = "container">
+  <form method="POST" action="{{ url_for('saving')}}">
+
+
+    <div class = "mb-3">
+      {{ form.csrf_token }}
+      {{ form.description.label(class = "form-label") }}
+      {{ form.description(class = "form-control") }}
+    </div>
+    <br>
+    
+    <div class = "mb-3">
+      {{ form.tax.label(class = "form-label") }} 
+      {{ form.tax(class = "form-control") }}
+    
+    </div>
+      <br>
+
+    <div class = "mb-3">
+      {{ form.amount.label(class = "form-label") }} 
+      {{ form.amount(class = "form-control") }}
+    </div>
+    <br>
+    <div class = "mb-3">
+      
+      {{ form.date.label(class = "form-label") }} 
+      {{ form.date(class = "form-control") }}
+    </div>
+
+    <input type="submit">
+
+    </form>
+  </div>
+
+{% endblock %}

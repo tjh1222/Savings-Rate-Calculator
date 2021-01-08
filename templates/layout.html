@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savings Calculator</title>
+</head>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+
+<body>
+
+  <nav style = "margin-left: 10px; margin-right: 10px"class = "navbar navbar-expand-lg navbar-light bg-light">
+    <a href = "{{ url_for('index') }}" class = "navbar-brand">Savings Rate Calculator</a>
+    
+    <ul class="navbar-nav ms-auto">
+
+      {% if current_user.is_authenticated%}
+        <li class = "nav-item">
+          <a href = "{{ url_for('logout') }}" class = "nav-link">Logout</a>
+        </li> 
+      {% else %}
+        <li class = "nav-item">
+          <a href = "{{ url_for('login') }}" class = "nav-link">Login</a>
+        </li>
+        <li class = "nav-item">
+          <a href = "{{ url_for('register') }}" class = "nav-link">SignUp</a>
+        </li>
+      {% endif %}
+    </ul>
+
+    
+  </nav>
+  {% block body %}
+
+
+  
+
+  {% endblock %}
+
+
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        <ul class="list-inline text-center">
+          <li class="list-inline-item">
+            <a href="#">
+              <span class="fa-stack fa-lg">
+                <i class="fas fa-circle fa-stack-2x"></i>
+                <i class="fab fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#">
+              <span class="fa-stack fa-lg">
+                <i class="fas fa-circle fa-stack-2x"></i>
+                <i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#">
+              <span class="fa-stack fa-lg">
+                <i class="fas fa-circle fa-stack-2x"></i>
+                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+        </ul>
+        <p style = "text-align: center" class="copyright text-muted">Created By: Tyler Hurley</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js" />
+
+</footer>
+  
+</body>
+</html>
+

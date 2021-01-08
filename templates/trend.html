@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+<div class = "container">
+  <canvas id = "myChart"></canvas>
+</div>
+
+<script>
+  let myChart = document.getElementById('myChart').getContext('2d');
+  let lineChart = new Chart(myChart,{
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'March'],
+      datasets:[{
+        label: 'Savings Rate',
+        data:[
+          25,
+          30,
+          50
+        ]
+      }]
+    },
+
+    // configuration options go here
+    options: {}
+
+  });
+</script>
+
+{% endblock %}
+
+
+
+

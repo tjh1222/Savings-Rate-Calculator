@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+  {% block body %}
+<div class = "container">
+    
+    
+    <form style = "text-align:center" method = "POST" action = " {{ url_for('index')  }}">
+      {{ form.csrf_token }}
+      {{form.month.label}} {{form.month()}}
+      {{ form.year.label }} {{ form.year() }}
+      <input type = "submit" value = "Submit">
+    </form>
+  
+  <hr>
+  <h1 style = "text-align: center">{{month}} {{year}} - Summary</h1>
+  <table class="table">
+   <thead>
+     <tr>
+       <th scope="col">Total Income</th>
+       <th scope="col">Total Savings</th>
+       <th scope="col">Total Expenses</th>
+       <th scope="col">Cash Remaining</th>
+       <th scope="col">Savings Rate</th>
+     </tr>
+   </thead>
+   <tbody>
+     
+     <tr>
+       <td>${{ incomeTotal }}</td>
+       <td>${{ SavingsTotal }}</td>
+       <td>${{ expenseTotal }}</td>
+       <td>${{ net }}</td>
+       <td> {{ savingsRate }}% </td>
+       
+     </tr>
+     
+   </tbody>
+ </table>
+
+    <h1 style = "text-align: center">Income</h1>
+    <button style = "float: right"><a href = "{{url_for('income')}}">+Add Income</a></button>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Date</th>
+          
+        </tr>
+      </thead>
+      <tbody>
+          {% for income in incomes %}
+          
+            <tr>
+              <td scope="row">{{loop.index}}</th>
+              <td>{{income.description}}</td>
+              <td>{{income.amount}}</td>
+              <td>{{income.date}}</td>
+              <td><form action = "{{ url_for('deleteIncome', income_id = income.id) }}" method = "POST">
+                <input type = "submit" value = "Delete">
+              </form></td>
+            </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+    
+  <hr>
+
+    <h1 style = "text-align:center">Savings</h1>
+    <button style = "float: right"><a href = "{{url_for('saving')}}">+Add Savings</a></button>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Pre/Post Tax</th>
+          <th scope="col">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for saving in savings %}
+        
+        <tr>
+          <td scope="row">{{ loop.index }}</td>
+          <td>{{saving.description}}</td>
+          <td>{{saving.amount}}</td>
+          <td>{{saving.tax}}</td>
+          <td>{{saving.date}}</td>
+          <td><form action = "{{ url_for('deleteSaving', saving_id = saving.id) }}" method = "POST">
+            <input type = "submit" value = "Delete">
+          </form></td>
+          
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  <hr>
+
+    <h1 style = "text-align: center">Expenses</h1>
+    <button style = "float: right"><a href = "{{url_for('expense')}}">+Add Expenses</a></button>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Description</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for expense in expenses %}
+          
+          <tr>
+            <td scope="row">{{loop.index}}</td>
+            <td>{{expense.description}}</td>
+            <td>{{expense.amount}}</td>
+            <td>{{expense.date}}</td>
+            <td><form action = "{{ url_for('deleteExpense', expense_id = expense.id) }}" method = "POST">
+              <input type = "submit" value = "Delete">
+            </form></td>
+            
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    <hr>
+  
+    
+
+</div>
+     
+
+  {% endblock %}
