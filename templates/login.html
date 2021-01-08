@@ -3,27 +3,35 @@
 {% block body %}
 
 <div class = "container">
-  <form action = {{ url_for('login') }} method = 'POST'>
-    <div class = "mb-3">
-      {{form.csrf_token}}
-      {{ form.email.label(class="form-label")}}
-      {{ form.email(class="form-control")}}
-    </div>
-    <div>
-      <br>
-      {{ form.password.label(class="form-label") }} 
-      {{ form.password(class="form-control") }}
-    </div>
-      <br>
-    <div class = "mb-3">
-      {{ form.remember.label }} 
-      {{ form.remember }}
-    </div>
-      <br>
-      {{ form.submit }}
+  <div style = "text-align: center;" class = "mt-5"> 
+    <form action = {{ url_for('login') }} method = 'POST'>
+      <div class = "mb-3">
+        {{form.csrf_token}}
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control", style = "width:50%; margin-left:25%; text-align: center")}}
+        {% if form.email.errors %}
+          <ul>{% for error in form.email.errors %}<li class="alert-warning" style = "width:40%; margin-left:25%; text-align: center">{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+      <div>
+        <br>
+        {{ form.password.label(class="form-label sr-only") }} 
+        {{ form.password(class="form-control", style = "width:50%; margin-left:25%; text-align: center") }}
+        {% if form.password.errors %}
+          <ul>{% for error in form.password.errors %}<li class="alert-warning">{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+        <br>
+      <div class = "mb-3">
+        {{ form.remember.label }} 
+        {{ form.remember }}
+      </div>
+        <br>
+        {{ form.submit }}
 
-    
-  </form>
+      
+    </form>
+  </div>
 
 </div>
 
