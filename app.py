@@ -147,10 +147,10 @@ def trend():
   return render_template('trend.html')
 
 
+@app.route('/<date>') 
+@app.route('/', methods = ['GET', 'POST'], defaults = {'date': None})
 
-@app.route('/', methods = ['GET', 'POST'])
-
-def index():
+def index(date):
   # redirects users that aren't authenticated to the login page
   if current_user.is_authenticated == False:
     return redirect(url_for('login'))
@@ -161,6 +161,9 @@ def index():
   #form instance that allows user to control the month and year they are viewing on their dashboard
   form = DateForm()
 
+  
+
+
   #current month
   month = datetime.now().month
   #format handling for querying database
@@ -169,6 +172,11 @@ def index():
   #current year
   year = datetime.now().year
 
+  
+  
+
+
+  #checks if request satisifes validation and that it is a Post request
   if form.validate_on_submit():
 
     #calculate fullDate for querying the database
@@ -201,14 +209,30 @@ def index():
     net = p.getNetIncome(incomeTotal, expenseTotal)
 
     return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, incomeTotal = incomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate, net = net, month = month, year = year)
-    
-  #sets default values for the dateform. Automatically starts at current month and year
-  form.month.default = str(int(month))
-  form.year.default = year
-  form.process()
 
-  fullDate = "%" + str(year) + "-" + str(month) + "%" 
+
+  fullDate = "%" + str(year) + "-" + str(month) + "%"
+
+
+  if date != None:
+    fullDate = "%" + date[0:7] + "%"
+    month = date[5:7]
+    year = date[0:4]
+    form.month.default = str(int(month))
+    form.year.default = year
+    form.process()
+  else:
+    #sets default values for the dateform. Automatically starts at current month and year
+    form.month.default = str(int(month))
+    form.year.default = year
+    form.process()
+  
+
+
+  
   month = calendar.month_name[int(month)]
+  
+
 
   #query db for income
   incomes = queryIncome(fullDate, p)
@@ -240,7 +264,6 @@ def income():
 
   form = IncomeForm()
   if form.validate_on_submit():
-    print("income validated")
     description = form.description.data
     amount = form.amount.data
     date = form.date.data
@@ -250,7 +273,7 @@ def income():
     db.session.commit()
 
 
-    return redirect(url_for('index'))
+    return redirect(url_for('index', date = date))
 
 
   return render_template("income.html", form = form)
@@ -259,36 +282,38 @@ def income():
 
 def deleteIncome(income_id):
   income = Income.query.get(income_id)
+  date = income.date
   db.session.delete(income)
   db.session.commit()
   flash('Income Item Deleted')
-  return redirect(url_for('index'))
+  return redirect(url_for('index', date = date))
 
 
 @app.route('/deleteExpense/<expense_id>', methods = ['POST'])
 
 def deleteExpense(expense_id):
   expense = Expense.query.get(expense_id)
+  date = expense.date
   db.session.delete(expense)
   db.session.commit()
   flash('Expense Item Deleted')
-  return redirect(url_for('index'))
+  return redirect(url_for('index', date = date))
 
 @app.route('/deleteSaving/<saving_id>', methods = ['POST'])
 
 def deleteSaving(saving_id):
   saving = Saving.query.get(saving_id)
+  date = saving.date
   db.session.delete(saving)
   db.session.commit()
   flash('Saving Item Deleted')
-  return redirect(url_for('index'))
+  return redirect(url_for('index', date = date))
 
 
 @app.route('/register', methods = ['GET', 'POST'])
 
 def register():
   if current_user.is_authenticated:
-      print(current_user)
       return redirect(url_for("index"))
   form = RegistrationForm()
   if form.validate_on_submit():
@@ -342,7 +367,7 @@ def saving():
     temp = Saving(description = description, tax = tax, amount = amount, date = date, user_id = user_id)
     db.session.add(temp)
     db.session.commit()
-    return redirect(url_for('index'))
+    return redirect(url_for('index', date = date))
     
   print("validation failed")
 
@@ -363,7 +388,7 @@ def expense():
     db.session.add(temp)
     db.session.commit()
     print("Expense committed")
-    return redirect(url_for('index'))
+    return redirect(url_for('index', date = date))
 
   return render_template("expense.html", form = form)
     
