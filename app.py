@@ -11,9 +11,6 @@ from flask_login import LoginManager, current_user, UserMixin, login_user, logou
 import calendar
 
 
-
-
-
 import os
 
 
@@ -36,6 +33,13 @@ login_manager.login_view = 'login'
 def load_user(user_id):
    return User.query.get(int(user_id))
 
+
+
+'''
+  <------------------------------------------------->
+                      Models
+
+'''
 
 class User(db.Model, UserMixin):
   id = db.Column(db.Integer, primary_key = True)
@@ -88,93 +92,142 @@ class Expense(db.Model):
     return f"Expense({self.description}, {self.amount}, {self.date})"
 
 
+'''
+  <----------------------------------------------------->
+                    Helper Functions
+'''
+
+
+
+
+def queryIncome(fullDate, user):
+  incomes = Income.query.filter(and_(Income.date.like(fullDate), current_user.id == Income.user_id)).all()
+  return incomes
+
+def getIncomeTotal(incomes, user):
+  for income in incomes:
+    temp = IncomeItem(income.description, income.amount)
+    user.addIncome(temp)
+  return user.getIncome()
+
+def queryExpenses(fullDate, user):
+  expenses = Expense.query.filter(and_(Expense.date.like(fullDate), current_user.id == Expense.user_id)).all()
+  return expenses
+
+def getExpenseTotal(expenses, user):
+  for expense in expenses:
+      temp = ExpenseItem(expense.description, expense.amount)
+      user.addExpense(temp)
+  return user.getExpense()
+
+def querySavings(fullDate, user):
+  savings = Saving.query.filter(and_(Saving.date.like(fullDate), current_user.id == Saving.user_id)).all()
+  return savings
+
+def getSavingsTotal(savings, user):
+  for saving in savings:
+      temp = SavingItem(saving.description, saving.amount, saving.tax)
+      user.addSavings(temp)
+  return user.getSavings()
+
+
+'''
+
+<-------------------------------------------------->
+                    Routes
+
+'''
+
+
 @app.route('/trend')
 def trend():
   if current_user.is_authenticated == False:
     return redirect(url_for('login'))
   
   return render_template('trend.html')
-  
 
 
 
 @app.route('/', methods = ['GET', 'POST'])
 
 def index():
+  # redirects users that aren't authenticated to the login page
   if current_user.is_authenticated == False:
     return redirect(url_for('login'))
 
+  #creates instance of person class to hold all income, expenses, and savings value
   p = Person(current_user.username)
   
+  #form instance that allows user to control the month and year they are viewing on their dashboard
   form = DateForm()
+
+  #current month
   month = datetime.now().month
+  #format handling for querying database
   if int(month) < 10:
     month = "0" + str(month)
+  #current year
   year = datetime.now().year
 
-  
-  
-  
   if form.validate_on_submit():
 
+    #calculate fullDate for querying the database
     month = form.month.data
     year = form.year.data
-
     fullDate = "%" + str(year) + "-" + str(month) + "%"
-    print(fullDate)
+    #Converts month back to real name ex: January. Dynamically updates the heading on the index.html page
     month = calendar.month_name[int(month)]
-    incomes = Income.query.filter(and_(Income.date.like(fullDate), current_user.id == Income.user_id)).all()
-    expenses = Expense.query.filter(and_(Expense.date.like(fullDate), current_user.id == Expense.user_id)).all()
-    savings = Saving.query.filter(and_(Saving.date.like(fullDate), current_user.id == Saving.user_id)).all()
-    for income in incomes:
-      temp = IncomeItem(income.description, income.amount)
-      p.addIncome(temp)
-    for expense in expenses:
-      temp = ExpenseItem(expense.description, expense.amount)
-      p.addExpense(temp)
-    for saving in savings:
-      temp = SavingItem(saving.description, saving.amount, saving.tax)
-      p.addSavings(temp)
+    
+    # query database. Retrieving current_user income data that matches current date
+    incomes = queryIncome(fullDate, p)
+    #calculates income total
+    incomeTotal = getIncomeTotal(incomes, p)
 
-    incomeTotal = p.getIncome()
-    expenseTotal = p.getExpense()
-    SavingsTotal = p.getSavings()
+    #retrieve all related expense data 
+    expenses = queryExpenses(fullDate, p)
+    #calculate expense total
+    expenseTotal = getExpenseTotal(expenses, p)
+    #retrieve all savings data
+    savings = querySavings(fullDate, p)
+    #calculate savings total
+    SavingsTotal = getSavingsTotal(savings, p)
+    
+    #sets default saving to 0 and checks to see if income is non zero. Prevents divide by zero error
     savingsRate = 0
     if (incomeTotal > 0 ):
       savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
     
-
+    #calculates net income
     net = p.getNetIncome(incomeTotal, expenseTotal)
 
     return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, incomeTotal = incomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate, net = net, month = month, year = year)
     
+  #sets default values for the dateform. Automatically starts at current month and year
   form.month.default = str(int(month))
   form.year.default = year
   form.process()
 
   fullDate = "%" + str(year) + "-" + str(month) + "%" 
-  
   month = calendar.month_name[int(month)]
-  print(fullDate)
-  incomes = Income.query.filter(and_(Income.date.like(fullDate), current_user.id == Income.user_id)).all()
-  expenses = Expense.query.filter(and_(Expense.date.like(fullDate), current_user.id == Expense.user_id)).all()
-  savings = Saving.query.filter(and_(Saving.date.like(fullDate), current_user.id == Saving.user_id)).all()
-  print("starting income")
-  for income in incomes:
-    temp = IncomeItem(income.description, income.amount)
-    print(income)
-    p.addIncome(temp)
-  for expense in expenses:
-    temp = ExpenseItem(expense.description, expense.amount)
-    p.addExpense(temp)
-  for saving in savings:
-    temp = SavingItem(saving.description, saving.amount, saving.tax)
-    p.addSavings(temp)
-  incomeTotal = p.getIncome()
-  expenseTotal = p.getExpense()
+
+  #query db for income
+  incomes = queryIncome(fullDate, p)
+  incomeTotal = getIncomeTotal(incomes, p)
+  #query db for expenses
+  expenses = queryExpenses(fullDate, p)
+  expenseTotal = getExpenseTotal(expenses, p)
+  #query db for savings
+  savings = querySavings(fullDate, p)
+  SavingsTotal = getSavingsTotal(savings, p)
+  #calculate net income
   net = p.getNetIncome(incomeTotal, expenseTotal)
+
+  #error handling. Prevents division by zero error
+  savingsRate = 0
+  if (incomeTotal > 0 ):
+    savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
   
-  return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, net = net, month = month, year = year)
+  return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, net = net, month = month, year = year, incomeTotal = incomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate)
 
 
     
