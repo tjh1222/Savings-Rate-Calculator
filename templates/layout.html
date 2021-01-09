@@ -32,6 +32,16 @@
 
     
   </nav>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul style = "text-align: center; width: 40%; font-size: 12px; margin-left: 30%" class="alert-danger">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
   {% block body %}
 
 

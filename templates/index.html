@@ -55,7 +55,7 @@
             <tr>
               <td scope="row">{{loop.index}}</th>
               <td>{{income.description}}</td>
-              <td>{{income.amount}}</td>
+              <td>${{income.amount}}</td>
               <td>{{income.date}}</td>
               <td><form action = "{{ url_for('deleteIncome', income_id = income.id) }}" method = "POST">
                 <input type = "submit" value = "Delete">
@@ -86,7 +86,7 @@
         <tr>
           <td scope="row">{{ loop.index }}</td>
           <td>{{saving.description}}</td>
-          <td>{{saving.amount}}</td>
+          <td>${{saving.amount}}</td>
           <td>{{saving.tax}}</td>
           <td>{{saving.date}}</td>
           <td><form action = "{{ url_for('deleteSaving', saving_id = saving.id) }}" method = "POST">
@@ -116,7 +116,7 @@
           <tr>
             <td scope="row">{{loop.index}}</td>
             <td>{{expense.description}}</td>
-            <td>{{expense.amount}}</td>
+            <td>${{expense.amount}}</td>
             <td>{{expense.date}}</td>
             <td><form action = "{{ url_for('deleteExpense', expense_id = expense.id) }}" method = "POST">
               <input type = "submit" value = "Delete">

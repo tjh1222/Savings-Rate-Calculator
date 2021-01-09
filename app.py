@@ -266,6 +266,12 @@ def income():
   if form.validate_on_submit():
     description = form.description.data
     amount = form.amount.data
+    try:
+      amount = round(float(amount), 2)
+      amount = f"{amount:.2f}"
+    except ValueError:
+      flash("You entered an Invalid amount. Must be a number.")
+      return redirect(url_for('income'))
     date = form.date.data
     user_id = current_user.id
     temp = Income(description = description, amount = amount, date = date, user_id = user_id)
@@ -313,25 +319,29 @@ def deleteSaving(saving_id):
 @app.route('/register', methods = ['GET', 'POST'])
 
 def register():
+
   if current_user.is_authenticated:
       return redirect(url_for("index"))
   form = RegistrationForm()
   if form.validate_on_submit():
     hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-    user = User(username = form.username.data, email = form.email.data, password = hashed_password)
-    db.session.add(user)
-    db.session.commit()
-    flash('Your account has been created! You are now able to log in')
-    return redirect(url_for('login'))
+    try:
+      user = User(username = form.username.data, email = form.email.data, password = hashed_password)
+      db.session.add(user)
+      db.session.commit()
+      flash('Your account has been created! You are now able to log in')
+      return redirect(url_for('login'))
+    except:
+      flash('The username or email you entered already exists.')
+    return redirect(url_for('register'))
 
 
   return render_template('registration.html', form = form)
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
-  print("test")
+  error = None
   if current_user.is_authenticated:
-      print(current_user)
       return redirect(url_for("index"))
   form = LoginForm()
   if form.validate_on_submit():
@@ -340,10 +350,10 @@ def login():
        login_user(user, remember = form.remember.data)
        return redirect(url_for('index'))
     else:
-      print("login unsuccessful")
       flash("Login unsuccessful. Please Check Email and Password")
-  print("not validated")
-  return render_template('login.html', form = form)
+      error = "Invalid Credentials"
+  
+  return render_template('login.html', form = form, error = error)
 
 @app.route('/logout')
 def logout():
@@ -361,6 +371,12 @@ def saving():
 
     description = form.description.data
     amount = form.amount.data
+    try:
+      amount = round(float(amount), 2)
+      amount = f"{amount:.2f}"
+    except ValueError:
+      flash("You entered an Invalid amount. Must be a number.")
+      return redirect(url_for('saving'))
     date = form.date.data
     tax = form.tax.data
     user_id = current_user.id
@@ -382,6 +398,12 @@ def expense():
     print("Expense added")
     description = form.description.data
     amount = form.amount.data
+    try:
+      amount = round(float(amount), 2)
+      amount = f"{amount:.2f}"
+    except ValueError:
+      flash("You entered an Invalid amount. Must be a number.")
+      return redirect(url_for('expense'))
     date = form.date.data
     user_id = current_user.id
     temp = Expense(description = description, amount = amount, date = date, user_id = user_id)
