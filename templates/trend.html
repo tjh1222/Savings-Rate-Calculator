@@ -23,18 +23,26 @@ crossorigin="anonymous"></script>
                   "{{ item }}",
                   {% endfor %}],
         datasets:[{
-          label: 'Savings Rate',
+          label: 'Savings Rate %',
           data: [{% for item in data %}
                   "{{ item }}",
                   {% endfor %}],
-          backgroundColor: [
-            '#AFC5DF'
-          ],
+          
           borderColor: [
             '#609CE1'
           ]
           
+        }, {
+
+          label: 'Conventional Financial Advice(15%)',
+          data: [15, 15],
+          borderColor: [
+            '#FC7307'
+
+          ]
+
         }]
+
       },
 
       // configuration options go here
