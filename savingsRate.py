@@ -42,13 +42,10 @@ class Person:
   
   def adjustedIncome(self, income):
     income = income
-    print(f"The income before adjustment is: {income}")
     for saving in self.savings:
       print(saving)
       if (saving.isTaxAdvantaged() == True):
         income += saving.getAmount()
-        print(income)
-    print(f"The adjusted Income is : {income}")
 
     return round(income, 2)
 
@@ -123,7 +120,6 @@ class SavingItem:
     if (self.taxAdvantaged == "Pre-Tax"):
       taxAdvantaged = True
 
-    print(taxAdvantaged)
     return taxAdvantaged
 
 

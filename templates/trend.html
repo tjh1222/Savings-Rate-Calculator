@@ -3,33 +3,63 @@
 {% block body %}
 
 <div class = "container">
-  <canvas id = "myChart"></canvas>
+  <canvas id = "myChart" width = "400" height = "200"></canvas>
 </div>
 
+<script
+src="https://code.jquery.com/jquery-3.2.1.min.js"
+integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+crossorigin="anonymous"></script>
+
+     
+
 <script>
-  let myChart = document.getElementById('myChart').getContext('2d');
-  let lineChart = new Chart(myChart,{
-    type: 'line',
-    data: {
-      labels: ['Jan', 'Feb', 'March'],
-      datasets:[{
-        label: 'Savings Rate',
-        data:[
-          25,
-          30,
-          50
-        ]
-      }]
-    },
 
-    // configuration options go here
-    options: {}
+    let myChart = document.getElementById('myChart').getContext('2d');
+    let lineChart = new Chart(myChart,{
+      type: 'line',
+      data: {
+        labels: [{% for item in label %}
+                  "{{ item }}",
+                  {% endfor %}],
+        datasets:[{
+          label: 'Savings Rate',
+          data: [{% for item in data %}
+                  "{{ item }}",
+                  {% endfor %}],
+          backgroundColor: [
+            '#AFC5DF'
+          ],
+          borderColor: [
+            '#609CE1'
+          ]
+          
+        }]
+      },
 
-  });
+      // configuration options go here
+      options: {
+        legend: {
+          position: 'right'
+        },
+        title: {
+          display: true,
+          text: 'Savings Rate Over Time',
+          fontSize: 25
+
+        },
+        scales: {
+          yAxes: [{ 
+            ticks: {
+              beginsAtZero: true
+            }
+
+          }]
+        }
+      }
+
+    });
+
 </script>
 
 {% endblock %}
-
-
-
-

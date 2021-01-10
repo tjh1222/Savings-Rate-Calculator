@@ -3,6 +3,7 @@ from forms import IncomeForm, SavingForm, ExpenseForm, DateForm, RegistrationFor
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import extract, and_
 from datetime import datetime, date
+import json
 
 
 from savingsRate import Person, IncomeItem, ExpenseItem, SavingItem
@@ -97,7 +98,43 @@ class Expense(db.Model):
                     Helper Functions
 '''
 
+def getMonths():
+  DateList = []
+  #need to run query to get all data from beggining to end
+  incomes = Income.query.filter(current_user.id == Income.user_id).order_by(Income.date).all()
+  print("Testing Query")
+  date = str(incomes[0].date)
+  print(date)
+  #first month and year
+  year = int(date[0:4])
+  month = int(date[5:7])
+  DateList.append("%" + str(year) + "-" + str(month) + "%")
+  #current month and year
+  current_month = datetime.now().month
 
+  current_year = datetime.now().year
+
+  while (month != current_month + 1 and year != current_year):
+    if ( month == 12):
+      month = 1
+      year += 1
+    else:
+      month += 1
+    
+    if (int(month) < 10):
+      month = ("0" + str(month))
+
+    fullDate = "%" + str(year) + "-" + str(month) + "%"
+    DateList.append(fullDate)
+
+  return DateList
+
+  
+
+  
+  
+  
+  
 
 
 def queryIncome(fullDate, user):
@@ -139,12 +176,44 @@ def getSavingsTotal(savings, user):
 '''
 
 
+
+
+
 @app.route('/trend')
 def trend():
   if current_user.is_authenticated == False:
     return redirect(url_for('login'))
+  months = getMonths()
+  savingsRateDict = {}
+  for month in months:
+    p = Person(current_user.username)
+
+    incomeTotal = getIncomeTotal(queryIncome(month, p ), p)
+    expenseTotal = getExpenseTotal(queryExpenses(month, p), p)
+    savingsRate = 0
+    if (incomeTotal > 0 ):
+      savingsRate = p.getSavingsRate(p.adjustedIncome(incomeTotal), expenseTotal)
+    savingsRateDict[month] = savingsRate
+  data = savingsRateDict.values()
+  label = savingsRateDict.keys()
+  tempData = []
+  tempLabel = []
+  for d in data:
+    tempData.append(str(d))
+  data = tempData
+
+  for l in label:
+    l = l[1:8]
+    tempLabel.append(str(l))
+
+  label = tempLabel
   
-  return render_template('trend.html')
+
+  
+  return render_template('trend.html', data = data, label = label)
+
+
+
 
 
 @app.route('/<date>') 
@@ -218,6 +287,8 @@ def index(date):
     fullDate = "%" + date[0:7] + "%"
     month = date[5:7]
     year = date[0:4]
+    print("test")
+    print(month)
     form.month.default = str(int(month))
     form.year.default = year
     form.process()
