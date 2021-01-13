@@ -19,12 +19,14 @@
     <ul class="navbar-nav ms-auto">
 
       {% if current_user.is_authenticated%}
-        <li class = "nav-item">
-          <a href = "{{ url_for('logout') }}" class = "nav-link">Logout</a>
-        </li>
+
         <li class = "nav-item">
           <a href = "{{ url_for('trend') }}" class = "nav-link">See Trends</a>
         </li>
+        <li class = "nav-item">
+          <a href = "{{ url_for('logout') }}" class = "nav-link">Logout</a>
+        </li>
+
         
 
       {% else %}

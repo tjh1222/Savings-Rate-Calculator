@@ -39,6 +39,22 @@ class LoginForm(FlaskForm):
   password = PasswordField('Password', validators = [DataRequired()])
   remember = BooleanField('Remember Me')
   submit = SubmitField('Login')
+
+class UpdateIncomeForm(FlaskForm):
+  description = StringField('Description', validators=[DataRequired()])
+  amount = StringField('Amount', validators = [DataRequired()])
+  date = DateField('Date',  validators = [DataRequired()])
+
+class UpdateExpenseForm(FlaskForm):
+    description = StringField('Description', validators=[DataRequired()])
+    amount = StringField('Amount', validators = [DataRequired()])
+    date = DateField('Date', validators = [DataRequired()])
+
+class UpdateSavingForm(FlaskForm):
+    description = StringField('Description', validators=[DataRequired()])
+    tax = SelectField("Pre/Post Tax", choices = [("Pre-Tax"), ("Post-Tax")])
+    amount = StringField('Amount', validators = [DataRequired()])
+    date = DateField('Date', validators = [DataRequired()])
   
 
 

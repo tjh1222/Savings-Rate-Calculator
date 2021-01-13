@@ -23,7 +23,7 @@ crossorigin="anonymous"></script>
                   "{{ item }}",
                   {% endfor %}],
         datasets:[{
-          label: 'Savings Rate %',
+          label: 'Savings Rate(%)',
           data: [{% for item in data %}
                   "{{ item }}",
                   {% endfor %}],
@@ -34,8 +34,11 @@ crossorigin="anonymous"></script>
           
         }, {
 
-          label: 'Conventional Financial Advice(15%)',
-          data: [15, 15],
+          label: 'Conventional Financial Advice(%)',
+          data: [{% for item in conventionalData %}
+                  "{{ item }}",
+                  {% endfor %}],
+
           borderColor: [
             '#FC7307'
 

@@ -1,5 +1,5 @@
 from flask import Flask, url_for, render_template, redirect, flash
-from forms import IncomeForm, SavingForm, ExpenseForm, DateForm, RegistrationForm, LoginForm
+from forms import IncomeForm, SavingForm, ExpenseForm, DateForm, RegistrationForm, LoginForm, UpdateIncomeForm, UpdateExpenseForm, UpdateSavingForm
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import extract, and_
 from datetime import datetime, date
@@ -102,18 +102,19 @@ def getMonths():
   DateList = []
   #need to run query to get all data from beggining to end
   incomes = Income.query.filter(current_user.id == Income.user_id).order_by(Income.date).all()
-  print("Testing Query")
   date = str(incomes[0].date)
-  print(date)
   #first month and year
   year = int(date[0:4])
   month = int(date[5:7])
+
+  if (int(month) < 10):
+      month = ("0" + str(month))
   DateList.append("%" + str(year) + "-" + str(month) + "%")
   #current month and year
   current_month = datetime.now().month
 
   current_year = datetime.now().year
-
+  month = int(month)
   while (month != current_month + 1 and year != current_year):
     if ( month == 12):
       month = 1
@@ -207,10 +208,18 @@ def trend():
     tempLabel.append(str(l))
 
   label = tempLabel
+  #conventional data holds the data for the conventional financial wisdom that we should save 15% for Retirement
+  conventionalData = []
+
+  for i in range(len(data)):
+    conventionalData.append(15)
+
   
 
   
-  return render_template('trend.html', data = data, label = label)
+
+  
+  return render_template('trend.html', data = data, label = label, conventionalData = conventionalData)
 
 
 
@@ -324,6 +333,77 @@ def index(date):
   
   return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, net = net, month = month, year = year, incomeTotal = incomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate)
 
+
+
+@app.route('/updateSaving/<saving_id>', methods = ['GET', 'POST'])
+def updateSaving(saving_id):
+  saving = Saving.query.get(saving_id)
+  form = UpdateSavingForm()
+
+  if (form.validate_on_submit()):
+    saving.description = form.description.data
+    saving.tax = form.tax.data
+    saving.amount = form.amount.data
+    saving.date = form.date.data
+    db.session.commit()
+    return redirect(url_for('index'))
+
+  else:
+    form.description.default = saving.description
+    form.tax.default = saving.tax
+    form.amount.default = saving.amount
+    form.date.default = saving.date
+    form.process()
+
+    return render_template('updateSaving.html', form = form, saving = saving)
+
+
+@app.route('/updateIncome/<income_id>', methods = ['GET', 'POST'])
+
+def updateIncome(income_id):
+  income = Income.query.get(income_id)
+  form = UpdateIncomeForm()
+
+  if (form.validate_on_submit()):
+    income.description = form.description.data
+    income.amount = form.amount.data
+    income.date = form.date.data
+    db.session.commit()
+    return redirect(url_for('index'))
+  
+     
+  
+  else:
+    form.description.default = income.description
+    form.amount.default = income.amount
+    form.date.default = income.date
+    form.process()
+
+    return render_template('updateIncome.html', form = form, income = income)
+
+
+@app.route('/updateExpense/<expense_id>', methods = ['GET', 'POST'])
+
+def updateExpense(expense_id):
+  expense = Expense.query.get(expense_id)
+  form = UpdateExpenseForm()
+  
+  if (form.validate_on_submit()):
+    expense.description = form.description.data
+    expense.amount = form.amount.data
+    expense.date = form.date.data
+    db.session.commit()
+    return redirect(url_for('index'))
+  
+     
+  
+  else:
+    form.description.default = expense.description
+    form.amount.default = expense.amount
+    form.date.default = expense.date
+    form.process()
+
+    return render_template('updateExpense.html', form = form, expense = expense)
 
     
 

@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class = "container">
+
+  <div style = "text-align: center;padding:10px" class = "mt-5">
+    <form method="POST" action="{{url_for('updateIncome', income_id = income.id)}}">
+      
+      <div class = "mb-3">
+        {{ form.csrf_token }}
+        {{ form.description.label(class = "form-label") }} 
+        {{ form.description(class = "form-control", style = "width:50%; margin-left:25%; text-align: center") }}
+      </div>
+      <br>
+      <div class = "mb-3">
+        {{ form.amount.label(class = "form-label") }} 
+        {{ form.amount(class = "form-control", style = "width:50%; margin-left:25%; text-align: center") }}
+      </div>
+      <br>
+      
+      <div class = "mb-3">
+        
+        {{ form.date.label(class = "form-label") }}
+        {{ form.date(class = "form-control", style = "width:50%; margin-left:25%; text-align: center") }}
+      </div>
+
+      <input type="submit" value = "Submit">
+
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
