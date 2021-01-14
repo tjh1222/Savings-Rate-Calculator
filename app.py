@@ -102,6 +102,9 @@ def getMonths():
   DateList = []
   #need to run query to get all data from beggining to end
   incomes = Income.query.filter(current_user.id == Income.user_id).order_by(Income.date).all()
+  if (len(incomes) == 0):
+    return DateList
+
   date = str(incomes[0].date)
   #first month and year
   year = int(date[0:4])
@@ -186,6 +189,10 @@ def trend():
     return redirect(url_for('login'))
   months = getMonths()
   savingsRateDict = {}
+  if (len(months) == 0):
+    flash("No Data To Display")
+    return redirect(url_for('index'))
+
   for month in months:
     p = Person(current_user.username)
 
@@ -485,6 +492,10 @@ def register():
     except:
       flash('The username or email you entered already exists.')
     return redirect(url_for('register'))
+  else:
+    for fieldName, errorMessages in form.errors.items():
+      for err in errorMessages:
+        flash(err)
 
 
   return render_template('registration.html', form = form)

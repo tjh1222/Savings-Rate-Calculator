@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask import url_for
 from wtforms import StringField, SelectField, SubmitField, PasswordField, BooleanField
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired, Length, Email
+from wtforms.validators import DataRequired, Length, Email, EqualTo
 
 class IncomeForm(FlaskForm):
     description = StringField('Description', validators=[DataRequired()])
@@ -30,8 +30,10 @@ class DateForm(FlaskForm):
 class RegistrationForm(FlaskForm):
   username = StringField('Username', validators = [DataRequired(), Length(min = 2, max = 20)])
   email = StringField('Email', validators = [DataRequired(), Email()])
-  password = PasswordField('Password', validators = [DataRequired()])
+  password = PasswordField('Password', validators = [DataRequired(), EqualTo('confirmPassword', message = 'Password and Confirm Password Fields Must be Equal')])
   confirmPassword = PasswordField('Confirm Password', validators = [DataRequired()])
+
+
   submit = SubmitField('Sign up')
 
 class LoginForm(FlaskForm):
