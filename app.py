@@ -198,9 +198,15 @@ def trend():
 
     incomeTotal = getIncomeTotal(queryIncome(month, p ), p)
     expenseTotal = getExpenseTotal(queryExpenses(month, p), p)
+    savingsTotal = getSavingsTotal(querySavings(month, p), p)
+
+    print(f"Income total is {incomeTotal}")
+    print(f"Expense total is {expenseTotal}")
     savingsRate = 0
     if (incomeTotal > 0 ):
       savingsRate = p.getSavingsRate(p.adjustedIncome(incomeTotal), expenseTotal)
+      #savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
+    
     savingsRateDict[month] = savingsRate
   data = savingsRateDict.values()
   label = savingsRateDict.keys()
