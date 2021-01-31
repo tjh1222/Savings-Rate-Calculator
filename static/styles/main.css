@@ -1,0 +1,36 @@
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.list {
+  list-style: none;
+  text-align: center;
+  background-color:white;
+  height: 100%
+  
+
+}
+
+.list li {
+  background-color: white;
+}
+
+
+
+.summary-area {
+  margin-top: 20px;
+  text-align: center;
+  width: 100%;
+  border-radius: 5px;
+  background-color: white;
+}
+
+.graph {
+
+  width: 60%;
+  height: 400px;
+}
+

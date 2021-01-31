@@ -1,6 +1,48 @@
 {% extends "layout.html" %}
 
+
+
+
   {% block body %}
+
+  <style>
+    [data-tooltip] {
+      position: relative;
+      cursor: default;
+
+    }
+
+    [data-tooltip]::after {
+      position: absolute;
+      width: 200px;
+      left: 0px;
+      content: attr(data-tooltip);
+      bottom: 125%; 
+      text-align: center;
+      box-sizing: border-box;
+      color: white;
+      background: black;
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 12px ;
+      font-weight: bold;
+
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.2s;
+
+
+    }
+
+    [data-tooltip]:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  </style>
+
+
 <div class = "container">
     
     
@@ -16,17 +58,17 @@
   <table class="table">
    <thead>
      <tr>
-       <th scope="col">Total Income</th>
+       <th data-tooltip = "Total Income + Pre-Tax Contributions" scope="col">Total Adjusted Income</th>
        <th scope="col">Total Savings</th>
        <th scope="col">Total Expenses</th>
-       <th scope="col">Cash Remaining</th>
+       <th scope="col">Unallocated Funds</th>
        <th scope="col">Savings Rate</th>
      </tr>
    </thead>
    <tbody>
      
      <tr>
-       <td>${{ incomeTotal }}</td>
+       <td>${{ adjustedIncomeTotal }}</td>
        <td>${{ SavingsTotal }}</td>
        <td>${{ expenseTotal }}</td>
        <td>${{ net }}</td>

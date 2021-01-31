@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class = "main">
+  <div class = "summary-area">
+    <h2> {{month}} {{year}} - Summary </h2>
+    <ul class = "list">
+      <li>Total Adjusted Income: ${{ adjustedIncomeTotal }}</li>
+      <li>Total Expenses: ${{ expenseTotal }} </li>
+      <li>Total Savings: ${{ savingsTotal }} </li>
+      <li>Unallocated Funds: ${{ net }} </li>
+      <li>Savings Rate: {{ savingsRate }}%</li>
+
+    </ul>
+  </div>
+
+  <div class = "button-group">
+    <form action = " {{ url_for('toggleGraphType') }}" method = "POST">
+        <input type = "submit" name = "graph" value = "Savings Rate">
+        <input type = "submit" name = "graph" value = "Income, Expense, Savings">
+    </form>
+  </div>
+
+
+  <div class = "graph">
+    <canvas id = "myChart"></canvas>
+  </div>
+</div>
+
+<!-- <script
+src="https://code.jquery.com/jquery-3.2.1.min.js"
+integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+crossorigin="anonymous"></script> -->
+
+     
+
+<script>
+    {% if graphType == "Savings Rate" %}
+        let myChart = document.getElementById('myChart').getContext('2d');
+        let lineChart = new Chart(myChart,{
+          type: 'line',
+          data: {
+            labels: [{% for item in label %}
+                      "{{ item }}",
+                      {% endfor %}],
+            datasets:[{
+              label: 'Savings Rate(%)',
+              data: [{% for item in data %}
+                      "{{ item }}",
+                      {% endfor %}],
+              
+              borderColor: [
+                '#609CE1'
+              ]
+              
+            }, {
+
+              label: 'Conventional Financial Advice(%)',
+              data: [{% for item in conventionalData %}
+                      "{{ item }}",
+                      {% endfor %}],
+
+              borderColor: [
+                '#FC7307'
+
+              ]
+
+            }]
+
+          },
+
+          // configuration options go here
+          options: {
+              maintainAspectRatio: false,
+            legend: {
+              position: 'bottom'
+            },
+            title: {
+              display: true,
+              text: 'Savings Rate Over Time',
+              fontSize: 25
+
+            },
+            scales: {
+              yAxes: [{ 
+                ticks: {
+                  beginsAtZero: true
+                }
+
+              }]
+            }
+          }
+
+        });
+      {% elif graphType == "Income, Expense, Savings" %}
+          let myChart = document.getElementById('myChart').getContext('2d');
+          let lineChart = new Chart(myChart,{
+            type: 'line',
+            data: {
+              labels: [{% for item in label %}
+                        "{{ item }}",
+                        {% endfor %}],
+              datasets:[{
+                label: 'Income($)',
+                data: [{% for item in incomes %}
+                        "{{ item }}",
+                        {% endfor %}],
+                
+                borderColor: [
+                  '#609CE1'
+                ]
+                
+              }, {
+
+                label: 'Expenses($)',
+                data: [{% for item in expenses %}
+                        "{{ item }}",
+                        {% endfor %}],
+
+                borderColor: [
+                  '#FC7307'
+
+                ]
+
+              }, {
+                label: 'Savings($)',
+                data: [{% for item in savings %}
+                        "{{ item }}",
+                        {% endfor %}],
+                borderColor: [
+                  'orange'
+                ]
+              }]
+
+            },
+
+            // configuration options go here
+            options: {
+                maintainAspectRatio: false,
+              legend: {
+                position: 'bottom'
+              },
+              title: {
+                display: true,
+                text: 'Income/Savings/Expenses Over Time',
+                fontSize: 25
+
+              },
+              scales: {
+                yAxes: [{ 
+                  ticks: {
+                    beginsAtZero: true
+                  }
+
+                }]
+              }
+            }
+
+          });
+        {% endif %}
+
+</script>
+
+
+
+
+{% endblock %}

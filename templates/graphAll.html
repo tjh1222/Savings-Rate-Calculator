@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+<div class = "container">
+  <canvas id = "myChart" width = "400" height = "200"></canvas>
+</div>
+
+
+
+     
+
+<script>
+
+    let myChart = document.getElementById('myChart').getContext('2d');
+    let lineChart = new Chart(myChart,{
+      type: 'line',
+      data: {
+        labels: [{% for item in label %}
+                  "{{ item }}",
+                  {% endfor %}],
+        datasets:[{
+          label: 'Adjusted Income',
+          data: [{% for item in incomes %}
+                  "{{ item }}",
+                  {% endfor %}],
+          
+          borderColor: [
+            '#609CE1'
+          ]
+          
+        }, {
+
+          label: 'Expense',
+          data: [{% for item in expenses %}
+                  "{{ item }}",
+                  {% endfor %}],
+
+          borderColor: [
+            '#FC7307'
+
+          ]
+
+        }, {
+          label: 'Savings',
+          data: [{% for item in savings %}
+                  "{{ item }}",
+                  {% endfor %}],
+          borderColor: ['green']
+        }]
+
+      },
+
+      // configuration options go here
+      options: {
+        legend: {
+          position: 'right'
+        },
+        title: {
+          display: true,
+          text: 'Financial Metrics over Time',
+          fontSize: 25
+
+        },
+        scales: {
+          yAxes: [{ 
+            ticks: {
+              beginsAtZero: true
+            }
+
+          }]
+        }
+      }
+
+    });
+
+</script>
+
+{% endblock %}
+
+

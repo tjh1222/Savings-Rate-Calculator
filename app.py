@@ -1,4 +1,4 @@
-from flask import Flask, url_for, render_template, redirect, flash
+from flask import Flask, url_for, render_template, redirect, flash, request
 from forms import IncomeForm, SavingForm, ExpenseForm, DateForm, RegistrationForm, LoginForm, UpdateIncomeForm, UpdateExpenseForm, UpdateSavingForm
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import extract, and_
@@ -106,6 +106,7 @@ def getMonths():
     return DateList
 
   date = str(incomes[0].date)
+  print(f"the date in getMonths is {date}")
   #first month and year
   year = int(date[0:4])
   month = int(date[5:7])
@@ -138,7 +139,13 @@ def getMonths():
   
   
   
-  
+def getList(lst):
+  temp = []
+  for item in lst:
+    temp.append(item)
+  return temp
+
+
 
 
 def queryIncome(fullDate, user):
@@ -149,6 +156,7 @@ def getIncomeTotal(incomes, user):
   for income in incomes:
     temp = IncomeItem(income.description, income.amount)
     user.addIncome(temp)
+  
   return user.getIncome()
 
 def queryExpenses(fullDate, user):
@@ -179,33 +187,90 @@ def getSavingsTotal(savings, user):
 
 '''
 
+@app.route('/graphAll')
+def graphAll():
+  print("what is going on?")
+  if current_user.is_authenticated == False:
+    return redirect(url_for('login'))
+  print("did it make it here?")
+  months = getMonths()
+  incomes = []
+  expenses = []
+  savings = []
+  label = []
+  
+  if (len(months) == 0):
+    flask('No Data to Display')
+    return redirect(url_for('index'))
 
+  for month in months:
+    p = Person(current_user.username)
+    incomeTotal = getIncomeTotal(queryIncome(month, p ), p)
+    expenseTotal = getExpenseTotal(queryExpenses(month, p), p)
+    savingsTotal = getSavingsTotal(querySavings(month, p), p)
 
+    incomeTotal = p.adjustedIncome(incomeTotal)
+    print(f"The month is: {month}")
+    print(f"The income is: {incomeTotal}")
+    print(f"The expense is {expenseTotal}")
+    print(f"The savings is: {savingsTotal}") 
+    
+    label.append(month)
+    incomes.append(incomeTotal)
+    expenses.append(expenseTotal)
+    savings.append(savingsTotal)
+   
+  tempLabel = []
+  tempIncome = []
+  tempExpense = []
+  tempSaving = []
+
+  for i in incomes:
+    tempIncome.append(str(i))
+  incomes = tempIncome
+  print(incomes)
+
+  for l in label:
+    l = l[1:8]
+    tempLabel.append(str(l))
+  label = tempLabel
+  print(label)
+
+  for e in expenses:
+    tempExpense.append(str(e))
+  expenses = tempExpense
+  print(expenses)
+  for s in savings:
+    tempSaving.append(str(s))
+  savings = tempSaving
+  print(savings)
+  
+  return render_template("graphAll.html", incomes = incomes, expenses = expenses, savings = savings, label = label)
 
 
 @app.route('/trend')
 def trend():
   if current_user.is_authenticated == False:
     return redirect(url_for('login'))
+  
   months = getMonths()
   savingsRateDict = {}
+  
+  
   if (len(months) == 0):
     flash("No Data To Display")
+    print("help")
     return redirect(url_for('index'))
 
   for month in months:
     p = Person(current_user.username)
-
     incomeTotal = getIncomeTotal(queryIncome(month, p ), p)
     expenseTotal = getExpenseTotal(queryExpenses(month, p), p)
     savingsTotal = getSavingsTotal(querySavings(month, p), p)
 
-    print(f"Income total is {incomeTotal}")
-    print(f"Expense total is {expenseTotal}")
     savingsRate = 0
     if (incomeTotal > 0 ):
       savingsRate = p.getSavingsRate(p.adjustedIncome(incomeTotal), expenseTotal)
-      #savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
     
     savingsRateDict[month] = savingsRate
   data = savingsRateDict.values()
@@ -221,21 +286,114 @@ def trend():
     tempLabel.append(str(l))
 
   label = tempLabel
-  #conventional data holds the data for the conventional financial wisdom that we should save 15% for Retirement
   conventionalData = []
 
   for i in range(len(data)):
     conventionalData.append(15)
 
   
-
-  
-
   
   return render_template('trend.html', data = data, label = label, conventionalData = conventionalData)
 
 
+@app.route('/toggleGraphType', methods = ["POST"])
 
+def toggleGraphType():
+  graphType = request.form['graph']
+  return redirect(url_for('dashboard', graphType = graphType))
+
+
+
+@app.route('/dashboard', defaults = {'graphType': "Savings Rate"})
+@app.route('/dashboard/<graphType>')
+
+def dashboard(graphType):
+  if current_user.is_authenticated == False:
+    return redirect(url_for('login'))
+  p = Person(current_user.username)
+  #current month
+  month = datetime.now().month
+  #format handling for querying database
+  if int(month) < 10:
+    month = "0" + str(month)
+  #current year
+
+  
+  year = datetime.now().year
+
+  fullDate = "%" + str(year) + "-" + str(month) + "%"
+  #query db for income
+  incomes = queryIncome(fullDate, p)
+  incomeTotal = getIncomeTotal(incomes, p)
+  #query db for expenses
+  expenses = queryExpenses(fullDate, p)
+  expenseTotal = getExpenseTotal(expenses, p)
+  #query db for savings
+  savings = querySavings(fullDate, p)
+  savingsTotal = getSavingsTotal(savings, p)
+  #calculate net income
+  adjustedIncomeTotal = p.adjustedIncome(incomeTotal)
+  net = round(adjustedIncomeTotal - expenseTotal - savingsTotal, 2)
+
+
+  #sets default saving to 0 and checks to see if income is non zero. Prevents divide by zero error
+  savingsRate = 0
+  if (incomeTotal > 0 ):
+    #savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
+    savingsRate = p.getSavingsRate(adjustedIncomeTotal, p.getExpense())
+
+  savingsRateDict = {}
+  incomes = []
+  expenses = []
+  savings = []
+  months = getMonths()
+
+  for month in months:
+      p = Person(current_user.username)
+      incomeTotal = getIncomeTotal(queryIncome(month, p ), p)
+      expenseTotal = getExpenseTotal(queryExpenses(month, p), p)
+      savingsTotal = getSavingsTotal(querySavings(month, p), p)
+
+      
+      expenses.append(expenseTotal)
+      savings.append(savingsTotal)
+
+      savingsRate = 0
+      if (incomeTotal > 0 ):
+        savingsRate = p.getSavingsRate(p.adjustedIncome(incomeTotal), expenseTotal)
+      
+      savingsRateDict[month] = savingsRate
+
+      incomeTotal = p.adjustedIncome(incomeTotal)
+      incomes.append(incomeTotal)
+
+
+
+
+  
+  data = savingsRateDict.values()
+  label = savingsRateDict.keys()
+  tempData = []
+  tempLabel = []
+  for d in data:
+    tempData.append(str(d))
+  data = tempData
+
+
+
+  for l in label:
+    l = l[1:8]
+    tempLabel.append(str(l))
+
+  label = tempLabel
+  conventionalData = []
+
+  for i in range(len(data)):
+    conventionalData.append(15)
+
+  month = calendar.month_name[int(datetime.now().month)]
+  
+  return render_template('dashboard.html', adjustedIncomeTotal = adjustedIncomeTotal, expenseTotal = expenseTotal, savingsTotal = savingsTotal, net = net, savingsRate= savingsRate, data = data, label = label, conventionalData = conventionalData, month = month, year = year, incomes= incomes, expenses = expenses, savings = savings, graphType = graphType)
 
 
 @app.route('/<date>') 
@@ -290,16 +448,21 @@ def index(date):
     savings = querySavings(fullDate, p)
     #calculate savings total
     SavingsTotal = getSavingsTotal(savings, p)
+
+    adjustedIncomeTotal = p.adjustedIncome(incomeTotal)
+    print(f"adjutedIncomeTotal is : {adjustedIncomeTotal}")
     
     #sets default saving to 0 and checks to see if income is non zero. Prevents divide by zero error
     savingsRate = 0
     if (incomeTotal > 0 ):
-      savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
+      #savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
+      savingsRate = p.getSavingsRate(adjustedIncomeTotal, p.getExpense())
     
     #calculates net income
-    net = p.getNetIncome(incomeTotal, expenseTotal)
+    #net = p.getNetIncome(adjustedIncomeTotal, expenseTotal)
+    net = round(adjustedIncomeTotal - expenseTotal - SavingsTotal, 2)
 
-    return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, incomeTotal = incomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate, net = net, month = month, year = year)
+    return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, adjustedIncomeTotal = adjustedIncomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate, net = net, month = month, year = year)
 
 
   fullDate = "%" + str(year) + "-" + str(month) + "%"
@@ -307,9 +470,11 @@ def index(date):
 
   if date != None:
     fullDate = "%" + date[0:7] + "%"
+    print(f"The full data is : {fullDate}")
     month = date[5:7]
     year = date[0:4]
     print("test")
+    print(f"The value of month is: {month}")
     print(month)
     form.month.default = str(int(month))
     form.year.default = year
@@ -337,14 +502,15 @@ def index(date):
   savings = querySavings(fullDate, p)
   SavingsTotal = getSavingsTotal(savings, p)
   #calculate net income
-  net = p.getNetIncome(incomeTotal, expenseTotal)
+  adjustedIncomeTotal = p.adjustedIncome(incomeTotal)
+  net = round(adjustedIncomeTotal - expenseTotal - SavingsTotal, 2)
 
   #error handling. Prevents division by zero error
   savingsRate = 0
   if (incomeTotal > 0 ):
-    savingsRate = p.getSavingsRate(p.adjustedIncome(p.getIncome()), p.getExpense())
+    savingsRate = p.getSavingsRate(adjustedIncomeTotal, p.getExpense())
   
-  return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, net = net, month = month, year = year, incomeTotal = incomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate)
+  return render_template("index.html", incomes = incomes, expenses = expenses, savings = savings, form = form, net = net, month = month, year = year, adjustedIncomeTotal = adjustedIncomeTotal, expenseTotal = expenseTotal, SavingsTotal = SavingsTotal, savingsRate = savingsRate)
 
 
 
@@ -516,7 +682,7 @@ def login():
     user = User.query.filter_by(email = form.email.data).first()
     if user and bcrypt.check_password_hash(user.password, form.password.data):
        login_user(user, remember = form.remember.data)
-       return redirect(url_for('index'))
+       return redirect(url_for('dashboard'))
     else:
       flash("Login unsuccessful. Please Check Email and Password")
       error = "Invalid Credentials"
